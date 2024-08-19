@@ -6,7 +6,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { CartDto } from './dto/cart.dto';
+import { CartDto, OrderDto } from './dto/cart.dto';
 import { CartService } from './services/cart.service';
 import { Cart } from '@prisma/client';
 
@@ -25,12 +25,15 @@ export class CartController {
   }
 
   @Get('')
-  getCartProducts() {
-    return this.cartService.getCartProductsOfUser();
+  async getCartProducts() {
+    const cartElements = await this.cartService.getCartProducts();
+    const totalCartPrice =
+      this.cartService.calculateTotalCartPrice(cartElements);
+    return { cartElements, totalCartPrice };
   }
 
-  @Post('buy')
-  buyProductInCart(@Body() cartIds: number[]): Promise<void> {
-    return this.cartService.buyProduct(cartIds);
+  @Post('make-order')
+  makeOrder(@Body() order: OrderDto): Promise<void> {
+    return this.cartService.makeOrder(order.cartIds);
   }
 }
